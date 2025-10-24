@@ -16,18 +16,17 @@ type BYOProviderOption struct {
 // GetBYOProviderList returns the list of supported BYO providers for CLI configuration.
 // This list excludes Cline provider which is handled separately.
 func GetBYOProviderList() []BYOProviderOption {
-    return []BYOProviderOption{
-        {Name: "TuringCoder", Provider: cline.ApiProvider_OPENAI}, // 新增TuringCoder选项
-        {Name: "Anthropic", Provider: cline.ApiProvider_ANTHROPIC},
-        {Name: "OpenAI", Provider: cline.ApiProvider_OPENAI},
-        {Name: "OpenAI Native", Provider: cline.ApiProvider_OPENAI_NATIVE},
-        {Name: "OpenRouter", Provider: cline.ApiProvider_OPENROUTER},
-        {Name: "X AI (Grok)", Provider: cline.ApiProvider_XAI},
-        {Name: "AWS Bedrock", Provider: cline.ApiProvider_BEDROCK},
-        {Name: "Google Gemini", Provider: cline.ApiProvider_GEMINI},
-        {Name: "Ollama", Provider: cline.ApiProvider_OLLAMA},
-        {Name: "Cerebras", Provider: cline.ApiProvider_CEREBRAS},
-    }
+	return []BYOProviderOption{
+		{Name: "Anthropic", Provider: cline.ApiProvider_ANTHROPIC},
+		{Name: "OpenAI Compatible", Provider: cline.ApiProvider_OPENAI},
+		{Name: "OpenAI (Official)", Provider: cline.ApiProvider_OPENAI_NATIVE},
+		{Name: "OpenRouter", Provider: cline.ApiProvider_OPENROUTER},
+		{Name: "X AI (Grok)", Provider: cline.ApiProvider_XAI},
+		{Name: "AWS Bedrock", Provider: cline.ApiProvider_BEDROCK},
+		{Name: "Google Gemini", Provider: cline.ApiProvider_GEMINI},
+		{Name: "Ollama", Provider: cline.ApiProvider_OLLAMA},
+		{Name: "Cerebras", Provider: cline.ApiProvider_CEREBRAS},
+	}
 }
 
 // SelectBYOProvider displays a menu for selecting a BYO provider.
@@ -79,35 +78,28 @@ func SupportsBYOModelFetching(provider cline.ApiProvider) bool {
 
 // GetBYOProviderPlaceholder returns a placeholder model ID for manual entry based on provider.
 func GetBYOProviderPlaceholder(provider cline.ApiProvider) string {
-    switch provider {
-    case cline.ApiProvider_ANTHROPIC:
-        return "e.g., claude-sonnet-4-5-20250929"
-    case cline.ApiProvider_OPENAI:
-        // 特殊处理TuringCoder的模型提示
-        providers := GetBYOProviderList()
-        for _, p := range providers {
-            if p.Provider == cline.ApiProvider_OPENAI && p.Name == "TuringCoder" {
-                return "e.g., gpt-5 (自动配置)"
-            }
-        }
-        return "e.g., gpt-5-2025-08-07"
-    case cline.ApiProvider_OPENAI_NATIVE:
-        return "e.g., openai/gpt-oss-120b"
-    case cline.ApiProvider_OPENROUTER:
-        return "e.g., google/gemini-2.0-flash-exp:free"
-    case cline.ApiProvider_XAI:
-        return "e.g., grok-code-fast-1"
-    case cline.ApiProvider_BEDROCK:
-        return "e.g., anthropic.claude-sonnet-4-5-20250929-v1:0"
-    case cline.ApiProvider_GEMINI:
-        return "e.g., gemini-2.5-pro"
-    case cline.ApiProvider_OLLAMA:
-        return "e.g., qwen3-coder:30b"
-    case cline.ApiProvider_CEREBRAS:
-        return "e.g., gpt-oss-120b"
-    default:
-        return "Enter model ID"
-    }
+	switch provider {
+	case cline.ApiProvider_ANTHROPIC:
+		return "e.g., claude-sonnet-4-5-20250929"
+	case cline.ApiProvider_OPENAI:
+		return "e.g., openai/gpt-oss-120b"
+	case cline.ApiProvider_OPENAI_NATIVE:
+		return "e.g., gpt-5-2025-08-07"
+	case cline.ApiProvider_OPENROUTER:
+		return "e.g., google/gemini-2.0-flash-exp:free"
+	case cline.ApiProvider_XAI:
+		return "e.g., grok-code-fast-1"
+	case cline.ApiProvider_BEDROCK:
+		return "e.g., anthropic.claude-sonnet-4-5-20250929-v1:0"
+	case cline.ApiProvider_GEMINI:
+		return "e.g., gemini-2.5-pro"
+	case cline.ApiProvider_OLLAMA:
+		return "e.g., qwen3-coder:30b"
+	case cline.ApiProvider_CEREBRAS:
+		return "e.g., gpt-oss-120b"
+	default:
+		return "Enter model ID"
+	}
 }
 
 // GetBYOAPIKeyFieldConfig returns field configuration for API key input based on provider.
@@ -135,10 +127,10 @@ func GetBYOAPIKeyFieldConfig(provider cline.ApiProvider) APIKeyFieldConfig {
 }
 
 // PromptForAPIKey prompts the user to enter an API key (or base URL for Ollama).
-// For OpenAI Native provider, also prompts for an optional base URL.
-func PromptForAPIKey(provider cline.ApiProvider) (string, error) {
-    var apiKey string
-    config := GetBYOAPIKeyFieldConfig(provider)
+// For OpenAI (Compatible) provider, also prompts for an optional base URL.
+func PromptForAPIKey(provider cline.ApiProvider) (string, string, error) {
+	var apiKey string
+	config := GetBYOAPIKeyFieldConfig(provider)
 
     apiKeyField := huh.NewInput().
         Title(config.Title).
@@ -156,30 +148,29 @@ func PromptForAPIKey(provider cline.ApiProvider) (string, error) {
 
     form := huh.NewForm(huh.NewGroup(apiKeyField))
 
-    if err := form.Run(); err != nil {
-        return "", fmt.Errorf("failed to get API key: %w", err)
-    }
+	if err := form.Run(); err != nil {
+		return "", "", fmt.Errorf("failed to get API key: %w", err)
+	}
 
-    // For OpenAI Native provider, also prompt for base URL
-    if provider == cline.ApiProvider_OPENAI_NATIVE {
-        var baseURL string
-        baseURLForm := huh.NewForm(
-            huh.NewGroup(
-                huh.NewInput().
-                    Title("Base URL (optional, for OpenAI-compatible providers)").
-                    Placeholder("e.g., https://api.example.com/v1").
-                    Value(&baseURL).
-                    Description("Press Enter to skip if using standard OpenAI API"),
-            ),
-        )
+	// For OpenAI (Compatible) provider, prompt for base URL
+	if provider == cline.ApiProvider_OPENAI {
+		var baseURL string
+		baseURLForm := huh.NewForm(
+			huh.NewGroup(
+				huh.NewInput().
+					Title("Base URL (optional, for OpenAI-compatible providers)").
+					Placeholder("e.g., https://api.example.com/v1").
+					Value(&baseURL).
+					Description("Press Enter to skip if using standard OpenAI API"),
+			),
+		)
 
-        if err := baseURLForm.Run(); err != nil {
-            return "", fmt.Errorf("failed to get base URL: %w", err)
-        }
+		if err := baseURLForm.Run(); err != nil {
+			return "", "", fmt.Errorf("failed to get base URL: %w", err)
+		}
 
-        // TODO - connect baseURL
-        _ = baseURL
-    }
+		return apiKey, baseURL, nil
+	}
 
-    return apiKey, nil
+	return apiKey, "", nil
 }

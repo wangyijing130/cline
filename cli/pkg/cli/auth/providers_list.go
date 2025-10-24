@@ -203,62 +203,60 @@ func extractProviderFromState(stateData map[string]interface{}, mode string) *Pr
 // mapProviderStringToEnum converts provider string from state to ApiProvider enum
 // Returns (provider, ok) where ok is false if the provider is unknown
 func mapProviderStringToEnum(providerStr string) (cline.ApiProvider, bool) {
-    // Map string values to enum values
-    switch providerStr {
-    case "anthropic":
-        return cline.ApiProvider_ANTHROPIC, true
-    case "openai":
-        return cline.ApiProvider_OPENAI, true
-    case "openai-native":
-        return cline.ApiProvider_OPENAI_NATIVE, true
-    case "openrouter":
-        return cline.ApiProvider_OPENROUTER, true
-    case "xai":
-        return cline.ApiProvider_XAI, true
-    case "bedrock":
-        return cline.ApiProvider_BEDROCK, true
-    case "gemini":
-        return cline.ApiProvider_GEMINI, true
-    case "ollama":
-        return cline.ApiProvider_OLLAMA, true
-    case "cerebras":
-        return cline.ApiProvider_CEREBRAS, true
-    case "cline":
-        return cline.ApiProvider_CLINE, true
-    case "turingcoder":
-        return cline.ApiProvider_OPENAI, true // TuringCoder映射到OPENAI
-    default:
-        return cline.ApiProvider_ANTHROPIC, false // Return 0 value with false
-    }
+	// Map string values to enum values
+	switch providerStr {
+	case "anthropic":
+		return cline.ApiProvider_ANTHROPIC, true
+	case "openai-compatible": // internal name is 'openai', but this is actually the openai-compatible provider
+		return cline.ApiProvider_OPENAI, true
+	case "openai", "openai-native": // This is the native, official Open AI provider
+		return cline.ApiProvider_OPENAI_NATIVE, true
+	case "openrouter":
+		return cline.ApiProvider_OPENROUTER, true
+	case "xai":
+		return cline.ApiProvider_XAI, true
+	case "bedrock":
+		return cline.ApiProvider_BEDROCK, true
+	case "gemini":
+		return cline.ApiProvider_GEMINI, true
+	case "ollama":
+		return cline.ApiProvider_OLLAMA, true
+	case "cerebras":
+		return cline.ApiProvider_CEREBRAS, true
+	case "cline":
+		return cline.ApiProvider_CLINE, true
+	default:
+		return cline.ApiProvider_ANTHROPIC, false // Return 0 value with false
+	}
 }
 
 // GetProviderIDForEnum converts a provider enum to the provider ID string
 // This is the inverse of mapProviderStringToEnum and is used for provider definitions
 func GetProviderIDForEnum(provider cline.ApiProvider) string {
-    switch provider {
-    case cline.ApiProvider_ANTHROPIC:
-        return "anthropic"
-    case cline.ApiProvider_OPENAI:
-        return "openai"
-    case cline.ApiProvider_OPENAI_NATIVE:
-        return "openai-native"
-    case cline.ApiProvider_OPENROUTER:
-        return "openrouter"
-    case cline.ApiProvider_XAI:
-        return "xai"
-    case cline.ApiProvider_BEDROCK:
-        return "bedrock"
-    case cline.ApiProvider_GEMINI:
-        return "gemini"
-    case cline.ApiProvider_OLLAMA:
-        return "ollama"
-    case cline.ApiProvider_CEREBRAS:
-        return "cerebras"
-    case cline.ApiProvider_CLINE:
-        return "cline"
-    default:
-        return ""
-    }
+	switch provider {
+	case cline.ApiProvider_ANTHROPIC:
+		return "anthropic"
+	case cline.ApiProvider_OPENAI:
+		return "openai-compatible"
+	case cline.ApiProvider_OPENAI_NATIVE:
+		return "openai-native"
+	case cline.ApiProvider_OPENROUTER:
+		return "openrouter"
+	case cline.ApiProvider_XAI:
+		return "xai"
+	case cline.ApiProvider_BEDROCK:
+		return "bedrock"
+	case cline.ApiProvider_GEMINI:
+		return "gemini"
+	case cline.ApiProvider_OLLAMA:
+		return "ollama"
+	case cline.ApiProvider_CEREBRAS:
+		return "cerebras"
+	case cline.ApiProvider_CLINE:
+		return "cline"
+	default:
+		return ""
+	}
 }
 
 // getProviderSpecificModelID gets the provider-specific model ID field from state
@@ -310,30 +308,30 @@ func capitalizeMode(mode string) string {
 
 // GetProviderDisplayName returns a user-friendly name for the provider
 func GetProviderDisplayName(provider cline.ApiProvider) string {
-    switch provider {
-    case cline.ApiProvider_ANTHROPIC:
-        return "Anthropic"
-    case cline.ApiProvider_OPENAI:
-        return "OpenAI"
-    case cline.ApiProvider_OPENAI_NATIVE:
-        return "OpenAI Native"
-    case cline.ApiProvider_OPENROUTER:
-        return "OpenRouter"
-    case cline.ApiProvider_XAI:
-        return "X AI (Grok)"
-    case cline.ApiProvider_BEDROCK:
-        return "AWS Bedrock"
-    case cline.ApiProvider_GEMINI:
-        return "Google Gemini"
-    case cline.ApiProvider_OLLAMA:
-        return "Ollama"
-    case cline.ApiProvider_CEREBRAS:
-        return "Cerebras"
-    case cline.ApiProvider_CLINE:
-        return "Cline (Official)"
-    default:
-        return "Unknown"
-    }
+	switch provider {
+	case cline.ApiProvider_ANTHROPIC:
+		return "Anthropic"
+	case cline.ApiProvider_OPENAI:
+		return "OpenAI Compatible"
+	case cline.ApiProvider_OPENAI_NATIVE:
+		return "OpenAI (Official)"
+	case cline.ApiProvider_OPENROUTER:
+		return "OpenRouter"
+	case cline.ApiProvider_XAI:
+		return "X AI (Grok)"
+	case cline.ApiProvider_BEDROCK:
+		return "AWS Bedrock"
+	case cline.ApiProvider_GEMINI:
+		return "Google Gemini"
+	case cline.ApiProvider_OLLAMA:
+		return "Ollama"
+	case cline.ApiProvider_CEREBRAS:
+		return "Cerebras"
+	case cline.ApiProvider_CLINE:
+		return "Cline (Official)"
+	default:
+		return "Unknown"
+	}
 }
 
 // FormatProviderList formats the complete provider list for console display

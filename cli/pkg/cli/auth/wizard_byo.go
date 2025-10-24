@@ -34,21 +34,21 @@ func NewProviderWizard(ctx context.Context) (*ProviderWizard, error) {
 
 // showMainMenu displays the main provider configuration menu
 func (pw *ProviderWizard) showMainMenu() (string, error) {
-    var action string
-    form := huh.NewForm(
-        huh.NewGroup(
-            huh.NewSelect[string]().
-                Title("What would you like to do?").
-                Options(
-                    huh.NewOption("Configure a new provider", "add"),
-                    huh.NewOption("Change model for API provider", "change-model"),
-                    huh.NewOption("Remove a provider", "remove"),
-                    huh.NewOption("List configured providers", "list"),
-                    huh.NewOption("Return to main auth menu", "back"),
-                ).
-                Value(&action),
-        ),
-    )
+	var action string
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewSelect[string]().
+				Title("What would you like to do?").
+				Options(
+					huh.NewOption("Add or change an API provider", "add"),
+					huh.NewOption("Change model for API provider", "change-model"),
+					huh.NewOption("Remove a provider", "remove"),
+					huh.NewOption("List configured providers", "list"),
+					huh.NewOption("Return to main auth menu", "back"),
+				).
+				Value(&action),
+		),
+	)
 
     if err := form.Run(); err != nil {
         return "", fmt.Errorf("failed to get menu choice: %w", err)
@@ -110,10 +110,11 @@ func (pw *ProviderWizard) handleAddProvider() error {
         }
     }
 
-    // Step 2: Special handling for Bedrock provider
-    if provider == cline.ApiProvider_BEDROCK {
-        return pw.handleAddBedrockProvider()
-    }
+	// Step 3: Get API key and optional baseURL (for non-Bedrock providers)
+	apiKey, baseURL, err := PromptForAPIKey(provider)
+	if err != nil {
+		return fmt.Errorf("failed to get API key: %w", err)
+	}
 
     // Step 3: Get API key first (for non-Bedrock providers)
     apiKey, err := PromptForAPIKey(provider)
@@ -121,11 +122,10 @@ func (pw *ProviderWizard) handleAddProvider() error {
         return fmt.Errorf("failed to get API key: %w", err)
     }
 
-    // Step 4: Try to fetch models and let user select (with fallback to manual entry for providers that don't support fetch)
-    modelID, modelInfo, err := pw.selectModel(provider, apiKey)
-    if err != nil {
-        return fmt.Errorf("model selection failed: %w", err)
-    }
+	// Step 5: Apply configuration using AddProviderPartial
+	if err := AddProviderPartial(pw.ctx, pw.manager, provider, modelID, apiKey, baseURL, modelInfo); err != nil {
+		return fmt.Errorf("failed to save configuration: %w", err)
+	}
 
     // Step 5: Apply configuration using AddProviderPartial
     if err := AddProviderPartial(pw.ctx, pw.manager, provider, modelID, apiKey, modelInfo); err != nil {

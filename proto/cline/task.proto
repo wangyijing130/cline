@@ -99,6 +99,7 @@ message TaskItem {
   int32 tokens_out = 8;
   int32 cache_writes = 9;
   int32 cache_reads = 10;
+  bool current_workspace = 11;
 }
 
 // Request for ask response operation

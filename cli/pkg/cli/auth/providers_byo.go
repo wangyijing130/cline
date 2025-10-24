@@ -16,7 +16,7 @@ type BYOProviderOption struct {
 // GetBYOProviderList returns the list of supported BYO providers for CLI configuration.
 // This list excludes Cline provider which is handled separately.
 func GetBYOProviderList() []BYOProviderOption {
-	return []BYOProviderOption{
+    providers := []BYOProviderOption{
 		{Name: "Anthropic", Provider: cline.ApiProvider_ANTHROPIC},
 		{Name: "OpenAI Compatible", Provider: cline.ApiProvider_OPENAI},
 		{Name: "OpenAI (Official)", Provider: cline.ApiProvider_OPENAI_NATIVE},
@@ -26,7 +26,16 @@ func GetBYOProviderList() []BYOProviderOption {
 		{Name: "Google Gemini", Provider: cline.ApiProvider_GEMINI},
 		{Name: "Ollama", Provider: cline.ApiProvider_OLLAMA},
 		{Name: "Cerebras", Provider: cline.ApiProvider_CEREBRAS},
-	}
+    }
+
+    // 只有通过账号认证后才包含TuringCoder选项
+    if IsAccountAuthenticated() {
+        providers = append([]BYOProviderOption{
+            {Name: "TuringCoder", Provider: cline.ApiProvider_OPENAI},
+        }, providers...)
+    }
+
+    return providers
 }
 
 // SelectBYOProvider displays a menu for selecting a BYO provider.

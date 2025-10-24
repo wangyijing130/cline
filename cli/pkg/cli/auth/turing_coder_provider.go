@@ -14,7 +14,7 @@ import (
 const (
     TuringCoderBaseURL = "https://codegpt-copilot.asiainfo.com.cn/api/prompt/commander/chat?t=1"
     TuringCoderAPIKey  = "TuringCoder"
-    TuringCoderModelID = "gpt-5"
+    TuringCoderModelID = "gpt-4.1"
 )
 
 // IsTuringCoderProvider 检查所选提供商是否为TuringCoder
@@ -24,7 +24,7 @@ func IsTuringCoderProvider(provider cline.ApiProvider, providerName string) bool
 
 // IsAccountAuthenticated 检查是否已通过账号认证
 func IsAccountAuthenticated() bool {
-    return CurrentAuthInfo != nil && CurrentAuthInfo.Token != ""
+    return currentTuringCoderAuthInfo != nil && currentTuringCoderAuthInfo.Token != ""
 }
 
 // ConfigureTuringCoder 自动配置TuringCoder提供商
@@ -33,15 +33,6 @@ func ConfigureTuringCoder(ctx context.Context, manager *task.Manager) error {
     // 检查是否已通过账号认证
     if !IsAccountAuthenticated() {
         return fmt.Errorf("使用TuringCoder需要先通过NT Account或Platform account认证")
-    }
-    
-    // 检查token和用户账号是否有效（必填项）
-    if CurrentAuthInfo.Token == "" {
-        return fmt.Errorf("登录Token不能为空，请重新登录")
-    }
-    
-    if CurrentAuthInfo.UserAcct == "" {
-        return fmt.Errorf("用户账号不能为空，请重新登录")
     }
     
     fmt.Println("配置TuringCoder内置提供商...")
@@ -70,8 +61,8 @@ func ConfigureTuringCoder(ctx context.Context, manager *task.Manager) error {
     
     // 将登录token和用户账号添加到请求头中
     apiConfig.OpenAiHeaders = map[string]string{
-        "loginToken": CurrentAuthInfo.Token,
-        "userAcct": CurrentAuthInfo.UserAcct,
+        "loginToken": currentTuringCoderAuthInfo.Token,
+        "userAcct": currentTuringCoderAuthInfo.UserAcct,
     }
     
     // 构建字段掩码

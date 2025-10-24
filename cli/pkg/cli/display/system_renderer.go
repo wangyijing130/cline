@@ -136,7 +136,7 @@ func (sr *SystemMessageRenderer) RenderAuthError(err *clerror.ClineError) error 
     var parts []string
 
     // Header
-    parts = append(parts, "### **[ERROR]** Authentication Failed")
+    parts = append(parts, "### **[ERROR]** 身份验证失败")
     parts = append(parts, "")
 
     // Message - prefer detail message if available

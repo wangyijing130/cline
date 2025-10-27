@@ -3,6 +3,7 @@ package auth
 import (
     "context"
     "fmt"
+    "encoding/json"
     
     "github.com/cline/cli/pkg/cli/task"
     "github.com/cline/grpc-go/cline"
@@ -24,7 +25,7 @@ func IsTuringCoderProvider(provider cline.ApiProvider, providerName string) bool
 
 // IsAccountAuthenticated 检查是否已通过账号认证
 func IsAccountAuthenticated() bool {
-    return currentTuringCoderAuthInfo != nil && currentTuringCoderAuthInfo.Token != ""
+    return currentTuringCoderAuthInfo != nil && currentTuringCoderAuthInfo.Token != ""&& currentTuringCoderAuthInfo.UserAcct != ""
 }
 
 // ConfigureTuringCoder 自动配置TuringCoder提供商
@@ -84,14 +85,23 @@ func ConfigureTuringCoder(ctx context.Context, manager *task.Manager) error {
         UpdateMask: &fieldmaskpb.FieldMask{Paths: fieldPaths},
     }
     
-// 应用配置
+    // 应用配置
     if _, err := manager.GetClient().Models.UpdateApiConfigurationPartial(ctx, request); err != nil {
-        return fmt.Errorf("配置TuringCoder失败: %w", err)
+        // 序列化apiConfig为JSON，便于错误排查
+        // 若序列化失败，仅输出原始错误
+        importJson := ""
+        if configJson, jsonErr := json.MarshalIndent(apiConfig, "", "  "); jsonErr == nil {
+            importJson = string(configJson)
+        } else {
+            importJson = fmt.Sprintf("apiConfig序列化失败: %v", jsonErr)
+        }
+        // 输出详细错误信息（含apiConfig配置）
+        return fmt.Errorf("配置TuringCoder失败: %v\napiConfig配置详情:\n%s", err, importJson)
     }
 
     // 完成配置
     fmt.Println("✓ TuringCoder提供商配置成功！")
-    fmt.Println("  模型: gpt-5")
+    fmt.Println("  模型: " + TuringCoderModelID)
     fmt.Println("  基础URL: 已配置为内网地址")
     fmt.Println("  认证信息: 已将登录Token和用户账号添加到请求头")
 

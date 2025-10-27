@@ -29,7 +29,7 @@ export class OpenAiHandler implements ApiHandler {
     private ensureClient(): OpenAI {
         if (!this.client) {
             if (!this.options.openAiApiKey) {
-                throw new Error("OpenAI API key is required")
+                throw new Error("OpenAI API key is required: " + this.options.openAiBaseUrl)
             }
             try {
                 // Azure API shape slightly differs from the core API shape: https://github.com/openai/openai-node?tab=readme-ov-file#microsoft-azure-openai

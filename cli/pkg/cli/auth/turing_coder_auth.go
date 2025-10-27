@@ -193,7 +193,7 @@ func SaveTuringCoderAuthInfo(info *TuringCoderAuthInfo) error {
     if err != nil {
         return fmt.Errorf("获取用户主目录失败: %w", err)
     }
-    filePath := filepath.Join(homeDir, TuringCoderAuthInfoPath)
+    filePath := filepath.Join(homeDir,".cline", "data", TuringCoderAuthInfoPath)
     data, err := json.Marshal(info)
     if err != nil {
         return fmt.Errorf("序列化认证信息失败: %w", err)
@@ -211,7 +211,7 @@ func LoadTuringCoderAuthInfo() (*TuringCoderAuthInfo, error) {
     if err != nil {
         return nil, fmt.Errorf("获取用户主目录失败: %w", err)
     }
-    filePath := filepath.Join(homeDir, TuringCoderAuthInfoPath)
+    filePath := filepath.Join(homeDir,".cline", "data", TuringCoderAuthInfoPath)
     if _, err := os.Stat(filePath); os.IsNotExist(err) {
         return nil, nil
     }
@@ -232,7 +232,7 @@ func ClearTuringCoderAuthInfo() error {
     if err != nil {
         return fmt.Errorf("获取用户主目录失败: %w", err)
     }
-    filePath := filepath.Join(homeDir, TuringCoderAuthInfoPath)
+    filePath := filepath.Join(homeDir,".cline", "data", TuringCoderAuthInfoPath)
     if _, err := os.Stat(filePath); os.IsNotExist(err) {
         return nil
     }
